@@ -7,25 +7,23 @@ cloudinary.config({
     api_key: process.env.CLOUDINARY_API_KEY, 
     api_secret: process.env.CLOUDINARY_API_SECRET // Click 'View API Keys' above to copy your API secret
 });
-const uploadCloudinary = async (localFilePath)=> {
+const uploadCloudinary = async (localFilePath) => {
+    if (!localFilePath) return null;
 
-    // Upload an image
-    if(!localFilePath) return null
-     await cloudinary.uploader
-     .upload(localFilePath, {
-        resource_type: "auto"
-    }).then((response)=>{
-        // file has been uploaded successfull
-        //console.log("file is uploaded on cloudinary ", response.url);
-        fs.unlinkSync(localFilePath)
-        return response;
+    try {
+        const response = await cloudinary.uploader.upload(localFilePath, {
+            resource_type: "auto"
+        });
 
-       })
-       .catch((error) => {
-        fs.unlinkSync(localFilePath) // remove the locally saved temporary file as the upload operation got failed
-        return null;
-       });
+        console.log("file is uploaded on cloudinary", response.url);
+        fs.unlinkSync(localFilePath); // Delete local file after successful upload
+        return response; 
 
-  
+    } catch (error) {
+        console.error("Cloudinary upload error:", error);
+        fs.unlinkSync(localFilePath); // Delete local file if upload fails
+        return null; 
+    }
 };
+
 export {uploadCloudinary}
